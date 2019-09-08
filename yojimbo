@@ -1,0 +1,142 @@
+#!/bin/bash
+#
+#     ::: [ Yojimbo ] :::
+# 
+# Your-OS-Just-Interprets micro Bash Obfuscator
+# 
+# v1.3 ~> Nothing Works <~ 2019
+#
+# https://github.com/ZalgoNoise/yojimbo
+
+usage_() {
+    echo "Welcome to the zScript Bash command obfuscator!"
+    echo "This tool was designed to help you quickly convert"
+    echo "ASCI characters into their byte, hex and dual-hex"
+    echo "equivalent combinations, readable by bash"
+    echo "The output string that this program gives you can be"
+    echo "copy-pasted to a terminal to test its execution"
+    echo "whichever you wrote in should be executed"
+    echo "Options:"
+    echo -e "\t [-B]\tconvert to Byte"
+    echo -e "\t [-H]\tconvert to Hex"
+    echo -e "\t [-D]\tconvert to Dual-Hex"
+    echo -e "\t [-h]\tshows this help screen"
+}
+
+[[ -z $@  ]]    \
+    && usage_ && exit 1
+
+[[ ! "$1" =~ [-]["B|H|D|h"] ]] \
+    && echo -e "It's mandatory to supply one of the available modes:\n" \
+    && usage_ && exit 1
+
+mode=( "byte_" "hex_" "dhex_" )
+
+
+hex_() {
+    local jar=($(echo -n $@  \
+    |hexdump -C|cut -d'|' -f1\
+    |sed -e 's/^\w*\ *//'))
+    
+    for i in ${jar[@]};do
+        hchar+="\\x$i"
+    done
+
+    hstr="\$'$hchar'"
+    unset hchar
+}
+
+dhex_() {
+    local jar=($(echo -n $@  \
+    |hexdump -C|cut -d'|' -f1\
+    |sed -e 's/^\w*\ *//'))
+    
+    for i in ${jar[@]};do
+        hchar+="\\u00$i"
+    done
+
+    hstr="\$'$hchar'"
+    unset hchar
+}
+
+byte_() {
+    local jar=($(echo -n $@ \
+        | hexdump -b | sed 's/^\w*\ *//' ))
+
+    for i in ${jar[@]};do
+        hchar+="\\$i"
+    done
+
+    hstr="\$'$hchar'"
+    unset hchar
+}
+
+
+
+outmsg() {
+    echo "Your string representation for:"
+    if [[ ! -z $refstr ]] ;then
+        echo "$refcmd $refstr"
+    else 
+        echo "$refcmd"
+    fi
+    echo "Can be executed as:"
+    echo "$@"
+}
+
+
+run_() {
+if [[ ! -z $refstr ]];then
+  ${mode[$modeset]} $refcmd
+  cmmd=$hstr; unset hstr
+  ${mode[$modeset]} "$refstr"
+  string=$hstr; unset hstr
+else
+  ${mode[$modeset]} $refcmd
+  string=$hstr; unset hstr
+fi
+
+
+if [[ -z $string  ]];then
+    outmsg "$cmmd"
+else
+    outmsg "$cmmd $string"
+fi
+}
+
+user_input=( $(echo "$@") )
+
+while getopts "BHDh" arg;do
+    case $arg in
+        B)
+            modeset=0;
+            if [[ ${#user_input[@]} -lt 3 ]]; then refcmd=${user_input[1]}; else refcmd=${user_input[1]}; refstr=${user_input[@]:2}; fi
+            run_;
+            exit 0;;
+        H)
+            modeset=1;
+            if [[ ${#user_input[@]} -lt 3 ]]; then refcmd=${user_input[1]}; else refcmd=${user_input[1]}; refstr=${user_input[@]:2}; fi
+            run_;
+            exit 0;;
+        D)
+            modeset=2;
+            if [[ ${#user_input[@]} -lt 3 ]]; then refcmd=${user_input[1]}; else refcmd=${user_input[1]}; refstr=${user_input[@]:2}; fi
+            run_ ;
+            exit 0;;
+        h)
+            usage_ ;
+            exit 0 ;;
+        ?)
+            echo "Incorrect option.";
+            usage_;
+            exit 1;;
+
+        -)
+            echo "Please provide an option";
+            usage_;
+            exit 1 ;;
+            
+    esac
+done
+
+
