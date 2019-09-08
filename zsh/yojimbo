@@ -9,13 +9,13 @@
 # https://github.com/ZalgoNoise/yojimbo
 
 usage_() {
-    echo "Welcome to the zScript Bash command obfuscator!"
+    echo -e " # Welcome to the zScript Bash command obfuscator!\n"
     echo "This tool was designed to help you quickly convert"
     echo "ASCI characters into their byte, hex and dual-hex"
     echo "equivalent combinations, readable by bash"
     echo "The output string that this program gives you can be"
-    echo "copy-pasted to a terminal to test its execution"
-    echo "whichever you wrote in should be executed"
+    echo "copy-pasted to a terminal to test its execution."
+    echo -e "whichever commands you wrote in should be executed.\n"
     echo "Options:"
     echo -e "\t [-B]\tconvert to Byte"
     echo -e "\t [-H]\tconvert to Hex"
@@ -41,7 +41,7 @@ hex_() {
         hchar+="\\\x$i"
     done
 
-    hstr="\$'$hchar'"
+    hstr="\$'$hchar' "
     unset hchar
 }
 
@@ -54,7 +54,7 @@ dhex_() {
         hchar+="\\\u00$i"
     done
 
-    hstr="\$'$hchar'"
+    hstr="\$'$hchar' "
     unset hchar
 }
 
@@ -66,7 +66,7 @@ byte_() {
         hchar+="\\$i"
     done
 
-    hstr="\$'$hchar'"
+    hstr="\$'$hchar' "
     unset hchar
 }
 
@@ -74,33 +74,18 @@ byte_() {
 
 outmsg() {
     echo "Your string representation for:"
-    if [ ! -z $refstr ];then
-        echo "$refcmd $refstr"
-    else
-        echo "$refcmd"
-    fi
+    echo ${user_input[@]:1}
     echo "Can be executed as:"
     echo "$@"
 }
 
 
 run_() {
-if [ ! -z $refstr ];then
-  $mode[$modeset] $refcmd
-  cmmd=$hstr; unset hstr
-  $mode[$modeset] "$refstr"
-  string=$hstr; unset hstr
-else
-  $mode[$modeset] $refcmd
-  string=$hstr; unset hstr
-fi
-
-
-if [ -z $string  ];then
-    outmsg "$cmmd"
-else
-    outmsg "$cmmd $string"
-fi
+ for i in ${refstr[@]};do
+     ${mode[$modeset]} $i 
+     string+=$hstr; unset hstr
+ done
+ outmsg $string; unset string
 }
 
 user_input=($(echo $@))
@@ -109,19 +94,21 @@ while getopts "BHDh" arg;do
     case $arg in
         B)
             modeset=1;
-            if [ $#user_input -lt 3 ]; then refcmd=${user_input[2]}; else refcmd=${user_input[2]}; refstr=${user_input[@]:2-#}; fi
+            refstr=($(echo ${user_input[@]:1}) );
             run_;
             exit 0;;
         H)
+
             modeset=2;
-            if [ $#user_input -lt 3 ]; then refcmd=${user_input[2]}; else refcmd=${user_input[2]}; refstr=${user_input[@]:2-#}; fi
+            refstr=($(echo ${user_input[@]:1}) );
             run_;
             exit 0;;
         D)
             modeset=3;
-            if [ $#user_input -lt 3 ]; then refcmd=${user_input[2]}; else refcmd=${user_input[2]}; refstr=${user_input[@]:2-#}; fi
-            run_ ;
+            refstr=($(echo ${user_input[@]:1}) );
+            run_;
             exit 0;;
+
         h)
             usage_ ;
             exit 0 ;;
