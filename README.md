@@ -86,39 +86,10 @@ Where your available parameters are the following:
 #   4. Known issues and workarounds
 #
 #***************************************************
+    
+    I have noticed that on a set of instances, when running simple commands with this Unicode format, my terminal instance stops behaving correctly. I noted this on Termux in my phone, where it started taking in all input as Ctrl+key.
 
-
-    Possibly due to the way I'm getting user input to later on format it after the "getopts" sequence, you should NOT quote your input strings.
-    This will result on the output taking in the first word followed by the entire string with the parameter you chose, ergo:
-
-        $ yojimbo -H "cat /etc/shadow"
-
-    Will unfortunately output the equivalent to the string:
-
-        cat -H cat /etc/shadow
-
-    The CORRECT way to input a string is unquoted, just as:
-
-        $ yojimbo -H cat /etc/shadow
-
-    Which will output the equivalent to your actual string:
-
-        cat /etc/shadow
-
-
-
-    Also, you will notice that the first word is separated from the rest of the string. This appears to be mandatory when running commands through their Unicode equivalent. To explain this better, when you input 'cat /etc/shadow', the unicode comes out separating 'cat' and '/etc/shadow' such as:
-
-        $ yojimbo -H cat /etc/shadow
-
-      >>>  Your string representation for:
-      >>>  cat /etc/shadow
-      >>>  Can be executed as:
-      >>>  $'\x63\x61\x74' $'\x2f\x65\x74\x63\x2f\x73\x68\x61\x64\x6f\x77'
-
-    This shows that 'cat' ($'\x63\x61\x74') is displayed first, accepted by the shell as a valid command, and we can follow the rest of the string however we want. We can continue with Unicode, drop in nonsense, empty parameter substitutions and combine many techniques all for the sake of making our code harder to read.
-
-
+    I've noticed as well that some special characters should be escaped as your string is echoed into an array. This involves escaping pipes.
 
 #***************************************************
 #
